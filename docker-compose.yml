@@ -1,0 +1,76 @@
+# ============================================================
+# docker-compose.yml — Nilamku Booking System
+# Services: app (PHP/Apache + CI4), db (MySQL 8), phpmyadmin
+# ============================================================
+
+services:
+
+  # ── Aplikasi PHP + Apache ─────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nilamku_app
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      # Mount seluruh project ke dalam container
+      - .:/var/www/html
+      # Pisahkan vendor agar tidak tertimpa bind mount
+      - vendor_data:/var/www/html/vendor
+    environment:
+      - APACHE_DOCUMENT_ROOT=/var/www/html/public
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - nilamku_net
+
+  # ── MySQL 8 ───────────────────────────────────────────────
+  db:
+    image: mysql:8.0
+    container_name: nilamku_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: nilamku_db
+      MYSQL_USER: nilamku_user
+      MYSQL_PASSWORD: nilamku_pass
+    ports:
+      - "3309:3306" # Port host 3309 agar tidak bentrok dengan MySQL lokal
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nilamku_net
+
+  # ── phpMyAdmin (opsional, untuk manajemen DB via browser) ─
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: nilamku_pma
+    restart: unless-stopped
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "8001:80"
+    depends_on:
+      - db
+    networks:
+      - nilamku_net
+
+volumes:
+  db_data:
+    driver: local
+  vendor_data:
+    driver: local
+
+networks:
+  nilamku_net:
+    driver: bridge

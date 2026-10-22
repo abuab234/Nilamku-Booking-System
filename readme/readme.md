@@ -191,5 +191,6 @@ Dokumen ini adalah spesifikasi awal untuk membangun **Platform Pemesanan & Penja
 4. State machine status pesanan (Bagian 3.3).
 5. Integrasi webhook notifikasi (Bagian 3.4).
 6. UI/UX pelanggan & dashboard admin.
+7. Hosting memakai diskon.com yang versi gratisan jadi harus di sesuaikan
 
 Jika ada bagian yang ambigu, ikuti asumsi yang tertulis di dokumen ini sebagai default, kecuali pengguna memberikan instruksi lebih spesifik.
